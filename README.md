@@ -33,4 +33,4 @@ Jsdelivr外链格式：https://cdn.jsdelivr.net/gh/用户名/仓库名/文件名
 
 为爱发电
 
-loli外链格式:https://xcdn.loli.top/gh/
+loli外链格式:https://xcdn.loli.top/gh//用户名/仓库名/文件名
