@@ -30,3 +30,7 @@ cdn图库
 Github外链格式：https://raw.githubusercontent.com/用户名/仓库名/main/文件名
 
 Jsdelivr外链格式：https://cdn.jsdelivr.net/gh/用户名/仓库名/文件名
+
+为爱发电
+
+loli外链格式:https://xcdn.loli.top/gh/
