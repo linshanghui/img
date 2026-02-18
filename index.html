@@ -156,6 +156,7 @@
             background: #1e1e1e;
         }
 
+        /* 刷新按钮层级改低，避免点分页误触 */
         .refresh-btn {
             position: absolute;
             top: 6px;
@@ -171,7 +172,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 10;
+            z-index: 1; /* 比分页低 */
         }
 
         .image-item img {
@@ -230,7 +231,7 @@
             padding: 10px 16px;
             border-radius: 24px;
             box-shadow: 0 3px 15px rgba(0,0,0,0.08);
-            z-index: 9;
+            z-index: 99; /* 分页层级最高 */
             transition: background 0.3s;
         }
         body.dark .pagination {
@@ -330,57 +331,9 @@
         .preview-prev { left: 20px; top: 50%; transform: translateY(-50%); }
         .preview-next { right: 20px; top: 50%; transform: translateY(-50%); }
 
-        /* 登录弹窗 */
+        /* 登录弹窗已废弃，保留样式不删 */
         .login-modal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .login-modal.show {
-            display: flex;
-        }
-        .login-box {
-            width: 300px;
-            background: #fff;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-        body.dark .login-box {
-            background: #1e1e1e;
-        }
-        .login-box h3 {
-            margin-bottom: 16px;
-            text-align: center;
-        }
-        .login-input {
-            width: 100%;
-            height: 44px;
-            margin-bottom: 12px;
-            padding: 0 12px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            background: #fff;
-            color: #333;
-        }
-        body.dark .login-input {
-            background: #2d2d2d;
-            color: #eee;
-            border-color: #444;
-        }
-        .login-btn {
-            width: 100%;
-            height: 44px;
-            border: none;
-            border-radius: 10px;
-            background: #007aff;
-            color: #fff;
-            font-size: 15px;
-            cursor: pointer;
+            display: none !important;
         }
     </style>
 </head>
@@ -412,7 +365,7 @@
     <div class="menu-item" id="loginBtn">登录后台</div>
 </div>
 
-<!-- 登录弹窗 -->
+<!-- 登录弹窗（已隐藏） -->
 <div class="login-modal" id="loginModal">
     <div class="login-box">
         <h3>管理员登录</h3>
@@ -462,17 +415,10 @@
         menuPopup.classList.remove('show');
     };
 
-    // 登录弹窗
+    // 登录后台 → 直接跳转到 /admin/
     loginBtn.onclick = () => {
-        loginModal.classList.add('show');
         menuPopup.classList.remove('show');
-    };
-    loginModal.onclick = (e) => {
-        if (e.target === loginModal) loginModal.classList.remove('show');
-    };
-    document.getElementById('submitLogin').onclick = () => {
-        alert('登录功能已触发（可对接后端）');
-        loginModal.classList.remove('show');
+        window.location.href = '/admin/';
     };
 
     // 预览
