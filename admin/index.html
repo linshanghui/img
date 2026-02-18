@@ -7,7 +7,11 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif}
   :root{--primary:#6366f1;--radius:12px}
-  body{background:#f8fafc;padding-bottom:100px}
+  body{background:#f8fafc;padding-bottom:100px;transition:background 0.3s, color 0.3s;}
+  body.dark {
+    background: #121212;
+    color: #eee;
+  }
   .container{max-width:680px;margin:0 auto;padding:20px}
   .header{font-size:22px;font-weight:700;text-align:center;margin-bottom:16px}
   .tabs{display:flex;gap:10px;margin-bottom:18px}
@@ -16,15 +20,26 @@
   .view{display:none}
   .view.show{display:block}
 
-  .card{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+  .card{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.05);transition:background 0.3s;}
+  body.dark .card {
+    background: #1e1e1e;
+  }
   .form-group{margin-bottom:14px}
   .form-group label{font-size:13px;margin-bottom:6px;display:block}
-  input{width:100%;padding:8px 12px;border-radius:6px;border:1px solid #ddd}
+  input{width:100%;padding:8px 12px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#333;transition:background 0.3s, color 0.3s, border-color 0.3s;}
+  body.dark input {
+    background: #2d2d2d;
+    color: #eee;
+    border-color: #444;
+  }
   .btn{border-radius:8px;border:none;cursor:pointer;padding:8px 12px}
   .btn-primary{background:var(--primary);color:#fff}
   .btn-block{width:100%;padding:12px;font-size:14px}
 
   #fileInfo{margin:8px 0;font-size:13px;color:#444}
+  body.dark #fileInfo {
+    color: #ccc;
+  }
 
   .progress-wrap{
     margin:10px 0;
@@ -33,6 +48,9 @@
     border-radius:3px;
     overflow:hidden;
     display:none;
+  }
+  body.dark .progress-wrap {
+    background: #333;
   }
   .progress{
     height:100%;
@@ -48,6 +66,10 @@
     border-radius:8px;
     font-size:13px;
     display:none;
+  }
+  body.dark #uploadResult {
+    background: #113322;
+    color: #eee;
   }
   .link-item{
     display:flex;
@@ -71,13 +93,20 @@
   }
 
   .category{display:flex;gap:8px;margin-bottom:12px}
-  .category button{padding:6px 12px;border-radius:6px;border:none;background:#e2e8f0;cursor:pointer}
+  .category button{padding:6px 12px;border-radius:6px;border:none;background:#e2e8f0;cursor:pointer;transition:background 0.3s, color 0.3s;}
   .category button.active{background:var(--primary);color:#fff}
+  body.dark .category button {
+    background: #333;
+    color: #eee;
+  }
 
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
   .list{display:flex;flex-direction:column;gap:8px}
 
-  .item{background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;}
+  .item{background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;transition:background 0.3s;}
+  body.dark .item {
+    background: #1e1e1e;
+  }
   .list-item{
     display:flex;
     align-items:center;
@@ -85,10 +114,17 @@
     padding:10px 12px;
     background:#fff;
     border-radius:8px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.05)
+    box-shadow:0 1px 3px rgba(0,0,0,0.05);
+    transition:background 0.3s;
+  }
+  body.dark .list-item {
+    background: #1e1e1e;
   }
 
   .thumb{width:100%;height:140px;object-fit:cover;background:#f1f5f9}
+  body.dark .thumb {
+    background: #222;
+  }
   .name{
     padding:10px;
     font-size:12px;
@@ -98,15 +134,82 @@
     cursor:pointer;
     color:#333
   }
+  body.dark .name {
+    color: #eee;
+  }
   .bar{display:flex;gap:6px;padding:0 8px 8px}
   .bar button{flex:1;padding:6px;font-size:12px}
 
-  .pagination{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;z-index:10}
-  .pagination button,.pagination input{width:34px;height:34px;border-radius:8px;border:none;text-align:center;background:#fff}
+  /* 分页样式（第一版同款） */
+  .pagination {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items:center;
+    gap: 8px;
+    background: #fff;
+    padding: 10px 16px;
+    border-radius: 24px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+    z-index: 99;
+    transition: background 0.3s;
+  }
+  body.dark .pagination {
+    background: #1e1e1e;
+  }
+  .page-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    background: #f7f8fa;
+    color: #333;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+  }
+  body.dark .page-btn {
+    background: #2d2d2d;
+    color: #eee;
+  }
+  .page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .page-input {
+    width: 46px;
+    height: 36px;
+    text-align: center;
+    border: none;
+    border-radius: 10px;
+    background: #f7f8fa;
+    outline: none;
+    font-size: 13px;
+    transition: background 0.3s, color 0.3s;
+  }
+  body.dark .page-input {
+    background: #2d2d2d;
+    color: #eee;
+  }
+  .page-info {
+    font-size: 13px;
+    color: #666;
+    min-width:40px;
+    text-align:center;
+    transition: color 0.3s;
+  }
+  body.dark .page-info {
+    color: #ccc;
+  }
 
   .mask{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:999}
   .mask.show{display:flex}
-  .mask-body{background:#fff;width:90%;max-width:330px;border-radius:16px;padding:24px}
+  .mask-body{background:#fff;width:90%;max-width:330px;border-radius:16px;padding:24px;transition:background 0.3s;}
+  body.dark .mask-body {
+    background: #1e1e1e;
+  }
   .mask-actions{display:flex;gap:10px;margin-top:16px}
   .mask-actions button{flex:1;padding:10px;border-radius:8px;border:none}
 
@@ -128,10 +231,191 @@
     cursor:pointer;
     z-index:10;
   }
+  body.dark .img-refresh {
+    background: rgba(30,30,30,0.9);
+    color: #eee;
+  }
+
+  /* 右下角菜单按钮（第一版同款） */
+  .menu-float {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #fff;
+    border: none;
+    font-size: 16px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    z-index: 100;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s, color 0.3s;
+  }
+  body.dark .menu-float {
+    background: #1e1e1e;
+    color: #eee;
+  }
+  /* 弹出菜单 */
+  .menu-popup {
+    position: fixed;
+    bottom: 135px;
+    right: 20px;
+    width: 140px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    z-index: 99;
+    overflow: hidden;
+    display: none;
+    transition: background 0.3s;
+  }
+  body.dark .menu-popup {
+    background: #1e1e1e;
+  }
+  .menu-popup.show {
+    display: block;
+  }
+  .menu-item {
+    padding: 12px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .menu-item:hover {
+    background: rgba(0,0,0,0.05);
+  }
+  body.dark .menu-item:hover {
+    background: rgba(255,255,255,0.05);
+  }
+
+  /* 管理员认证弹窗 */
+  .pwd-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  .pwd-modal.show {
+    display: flex;
+  }
+  .pwd-box {
+    width: 300px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    transition: background 0.3s;
+  }
+  body.dark .pwd-box {
+    background: #1e1e1e;
+  }
+  .pwd-close {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    font-size: 18px;
+    cursor: pointer;
+    color: #666;
+  }
+  body.dark .pwd-close {
+    color: #ccc;
+  }
+  .pwd-box h3 {
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .pwd-input {
+    width: 100%;
+    height: 44px;
+    margin-bottom: 12px;
+    padding: 0 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+  }
+  body.dark .pwd-input {
+    background: #2d2d2d;
+    color: #eee;
+    border-color: #444;
+  }
+  .pwd-btn {
+    width: 100%;
+    height: 44px;
+    border: none;
+    border-radius: 10px;
+    background: #6366f1;
+    color: #fff;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  /* 修改密码弹窗 */
+  .change-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  .change-modal.show {
+    display: flex;
+  }
+  .change-box {
+    width: 300px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    transition: background 0.3s;
+  }
+  body.dark .change-box {
+    background: #1e1e1e;
+  }
 </style>
 </head>
 <body>
-<div id="toast">复制成功</div>
+<div id="toast">提示</div>
+
+<!-- 管理员认证弹窗 -->
+<div class="pwd-modal" id="pwdModal">
+  <div class="pwd-box">
+    <div class="pwd-close" onclick="closePwdModal()">×</div>
+    <h3>管理员认证</h3>
+    <input class="pwd-input" type="password" placeholder="请输入管理密码" id="adminPwd">
+    <button class="pwd-btn" id="submitPwd">确认登录</button>
+  </div>
+</div>
+
+<!-- 修改密码弹窗 -->
+<div class="change-modal" id="changeModal">
+  <div class="change-box">
+    <div class="pwd-close" onclick="closeChangeModal()">×</div>
+    <h3>修改管理密码</h3>
+    <input class="pwd-input" type="password" placeholder="请输入新密码" id="newPwd1" style="margin-bottom:10px">
+    <input class="pwd-input" type="password" placeholder="请确认新密码" id="newPwd2">
+    <button class="pwd-btn" onclick="saveNewPwd()" style="margin-top:12px">保存</button>
+  </div>
+</div>
+
+<!-- 右下角菜单 ≡ -->
+<button class="menu-float" id="menuBtn">≡</button>
+<div class="menu-popup" id="menuPopup">
+  <div class="menu-item" id="darkBtn">暗黑模式</div>
+  <div class="menu-item" id="loginBtn">管理员认证</div>
+  <div class="menu-item" id="changePwdBtn">修改密码</div>
+  <div class="menu-item" id="goHome">回到首页</div>
+</div>
 
 <div class="container">
   <div class="header">GitHub 文件管理</div>
@@ -143,8 +427,8 @@
   <div class="view show" id="upload-view">
     <div class="card">
       <div class="form-group">
-        <label>Token</label>
-        <input type="text" id="token" value="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" readonly>
+        <label>Token（登录后可见）</label>
+        <input type="text" id="token" value="已隐藏，请先登录" readonly>
       </div>
       <div class="form-group">
         <label>选择文件</label>
@@ -173,12 +457,13 @@
   </div>
 </div>
 
-<div class="pagination">
-  <button onclick="prev()">&lt;</button>
-  <input type="number" id="pageInput" onchange="goPage()">
-  <span>/</span>
-  <span id="totalPage">1</span>
-  <button onclick="next()">&gt;</button>
+<!-- 新版分页 -->
+<div class="pagination" id="pagination">
+  <button class="page-btn" onclick="prev()">&lt;</button>
+  <button class="page-btn" onclick="next()">&gt;</button>
+  <input type="number" class="page-input" id="pageInput" onchange="goPage()" min="1">
+  <span class="page-info">/</span>
+  <span class="page-info" id="totalPage">1</span>
 </div>
 
 <div class="mask" id="renameMask">
@@ -206,11 +491,132 @@ let totalPage = 1;
 let cat = "all";
 let renamePath = "";
 
+// 登录状态
+let isLogin = false;
+let adminPwd = "123456"; // 默认密码
+
 function $(id) { return document.getElementById(id); }
 
 window.onload = function() {
-  $("token").value = cfg.token;
+  $("token").value = "已隐藏，请先登录";
+  // 默认在上传页，隐藏分页
+  $("pagination").style.display = "none";
+
+  // 菜单逻辑
+  const menuBtn = $("menuBtn");
+  const menuPopup = $("menuPopup");
+  const darkBtn = $("darkBtn");
+  const loginBtn = $("loginBtn");
+  const changePwdBtn = $("changePwdBtn");
+  const goHome = $("goHome");
+
+  menuBtn.onclick = () => {
+    menuPopup.classList.toggle('show');
+  };
+  document.addEventListener('click', (e) => {
+    if (!menuBtn.contains(e.target) && !menuPopup.contains(e.target)) {
+      menuPopup.classList.remove('show');
+    }
+  });
+
+  // 暗黑模式
+  darkBtn.onclick = () => {
+    document.body.classList.toggle('dark');
+    menuPopup.classList.remove('show');
+  };
+
+  // 手动登录
+  loginBtn.onclick = () => {
+    menuPopup.classList.remove('show');
+    openPwdLogin();
+  };
+
+  // 修改密码
+  changePwdBtn.onclick = () => {
+    menuPopup.classList.remove('show');
+    if(!isLogin){
+      toast("请先登录");
+      return;
+    }
+    $("changeModal").classList.add("show");
+  };
+
+  // 回到首页
+  goHome.onclick = () => {
+    menuPopup.classList.remove('show');
+    location.href = "/";
+  };
+
+  // 登录提交
+  $("submitPwd").onclick = function() {
+    const p = $("adminPwd").value.trim();
+    if (p === adminPwd) {
+      isLogin = true;
+      closePwdModal();
+      $("token").value = cfg.token;
+      toast("登录成功");
+    } else {
+      toast("密码错误");
+    }
+  };
 };
+
+// 切换页面
+function show(view) {
+  document.querySelectorAll(".view").forEach(el => el.classList.remove("show"));
+  document.querySelectorAll(".tab").forEach(el => el.classList.remove("active"));
+  $(view + "-view").classList.add("show");
+  event.currentTarget.classList.add("active");
+  
+  // 切换分页显示
+  if (view === "list") {
+    $("pagination").style.display = "flex";
+    initList();
+  } else {
+    $("pagination").style.display = "none";
+  }
+}
+
+// 打开/关闭登录弹窗
+function openPwdLogin() {
+  $("adminPwd").value = "";
+  $("pwdModal").classList.add("show");
+}
+function closePwdModal() {
+  $("pwdModal").classList.remove("show");
+}
+
+// 关闭修改密码弹窗
+function closeChangeModal() {
+  $("changeModal").classList.remove("show");
+}
+
+// 保存新密码
+function saveNewPwd() {
+  const p1 = $("newPwd1").value.trim();
+  const p2 = $("newPwd2").value.trim();
+  if(!p1 || !p2){
+    toast("请输入完整密码");
+    return;
+  }
+  if(p1 !== p2){
+    toast("两次密码不一致");
+    return;
+  }
+  adminPwd = p1;
+  closeChangeModal();
+  toast("密码修改成功");
+}
+
+// 权限校验
+function checkLogin() {
+  if (!isLogin) {
+    toast("请先管理员认证");
+    openPwdLogin();
+    return false;
+  }
+  return true;
+}
 
 function toast(msg) {
   const t = $("toast");
@@ -241,14 +647,6 @@ function copyLink(path) {
 
 function refreshImg(img, path) {
   img.src = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/main/${path}?t=${Date.now()}`;
-}
-
-function show(view) {
-  document.querySelectorAll(".view").forEach(el => el.classList.remove("show"));
-  document.querySelectorAll(".tab").forEach(el => el.classList.remove("active"));
-  $(view + "-view").classList.add("show");
-  event.currentTarget.classList.add("active");
-  if (view === "list") initList();
 }
 
 async function initList() {
@@ -288,7 +686,6 @@ function isImg(name) {
   return ["JPG","JPEG","PNG","GIF","BMP","WEBP","SVG"].includes(e);
 }
 
-// 安全转义
 function esc(s) {
   return s.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 }
@@ -312,13 +709,14 @@ function render() {
     el.innerHTML = pageItems.map(f => {
       const path = esc(f.path);
       const name = esc(f.name);
+      const oper = isLogin ? `
+        <button class="btn mini-btn" onclick="rename('${path}')">重命名</button>
+        <button class="btn btn-primary mini-btn" onclick="del('${path}')">删除</button>
+      ` : '';
       return `
       <div class="list-item">
         <span onclick="copyLink('${path}')">${name}</span>
-        <div style="display:flex;gap:6px">
-          <button class="btn mini-btn" onclick="rename('${path}')">重命名</button>
-          <button class="btn btn-primary mini-btn" onclick="del('${path}')">删除</button>
-        </div>
+        <div style="display:flex;gap:6px">${oper}</div>
       </div>`;
     }).join("");
     return;
@@ -328,6 +726,11 @@ function render() {
   el.innerHTML = pageItems.map(f => {
     const path = esc(f.path);
     const name = esc(f.name);
+    const oper = isLogin ? `
+      <button class="btn" onclick="rename('${path}')">重命名</button>
+      <button class="btn btn-primary" onclick="del('${path}')">删除</button>
+    ` : '';
+
     if (isImg(f.name)) {
       const url = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/main/${esc(f.path)}`;
       return `
@@ -335,20 +738,14 @@ function render() {
         <img src="${url}" class="thumb">
         <div class="img-refresh" onclick="refreshImg(this.previousElementSibling,'${path}')">↻</div>
         <div class="name" onclick="copyLink('${path}')">${name}</div>
-        <div class="bar">
-          <button class="btn" onclick="rename('${path}')">重命名</button>
-          <button class="btn btn-primary" onclick="del('${path}')">删除</button>
-        </div>
+        <div class="bar">${oper}</div>
       </div>`;
     } else {
       return `
       <div class="item">
         <div class="thumb" style="display:flex;align-items:center;justify-content:center">FILE</div>
         <div class="name" onclick="copyLink('${path}')">${name}</div>
-        <div class="bar">
-          <button class="btn" onclick="rename('${path}')">重命名</button>
-          <button class="btn btn-primary" onclick="del('${path}')">删除</button>
-        </div>
+        <div class="bar">${oper}</div>
       </div>`;
     }
   }).join("");
@@ -361,7 +758,9 @@ function goPage() {
   if (v >= 1 && v <= totalPage) { page = v; render(); }
 }
 
+// 上传需要登录
 async function upload() {
+  if (!checkLogin()) return;
   const files = $("file").files;
   if (!files.length) return alert("请选择文件");
 
@@ -419,8 +818,8 @@ async function upload() {
   initList();
 }
 
-// 修复删除白屏
 async function del(path) {
+  if (!checkLogin()) return;
   if (!confirm("确定删除？")) return;
   try {
     const res = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${path}`);
@@ -441,6 +840,7 @@ async function del(path) {
 }
 
 async function doRename() {
+  if (!checkLogin()) return;
   const newName = $("newName").value.trim();
   if (!newName) return alert("请输入名称");
   try {
@@ -469,6 +869,7 @@ async function doRename() {
 }
 
 function rename(path) {
+  if (!checkLogin()) return;
   renamePath = path;
   $("newName").value = path.split("/").pop();
   $("renameMask").classList.add("show");
