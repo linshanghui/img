@@ -1,739 +1,481 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub 文件管理</title>
-    <style>
-        :root {
-            --sidebar-width: 280px;
-            --primary-color: #333;
-            --secondary-color: #666;
-            --hover-color: #f0f0f0;
-            --border-color: #ddd;
-            --success-color: #d4edda;
-            --error-color: #f8d7da;
-            --progress-color: #007bff;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GitHub 文件管理</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif}
+  :root{--primary:#6366f1;--radius:12px}
+  body{background:#f8fafc;padding-bottom:100px}
+  .container{max-width:680px;margin:0 auto;padding:20px}
+  .header{font-size:22px;font-weight:700;text-align:center;margin-bottom:16px}
+  .tabs{display:flex;gap:10px;margin-bottom:18px}
+  .tab{flex:1;padding:12px;border-radius:12px;border:none;background:#e2e8f0;cursor:pointer}
+  .tab.active{background:var(--primary);color:#fff}
+  .view{display:none}
+  .view.show{display:block}
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+  .card{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+  .form-group{margin-bottom:14px}
+  .form-group label{font-size:13px;margin-bottom:6px;display:block}
+  input{width:100%;padding:8px 12px;border-radius:6px;border:1px solid #ddd}
+  .btn{border-radius:8px;border:none;cursor:pointer;padding:8px 12px}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-block{width:100%;padding:12px;font-size:14px}
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            transition: margin-left 0.3s;
-            position: relative;
-            min-height: 100vh;
-        }
+  #fileInfo{margin:8px 0;font-size:13px;color:#444}
 
-        /* Header and Menu Button */
-        .header {
-            padding: 15px;
-            display: flex;
-            justify-content: flex-end;
-            position: fixed;
-            top: 0;
-            right: 0;
-            left: 0;
-            z-index: 100;
-            background-color: #f9f9f9;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+  .progress-wrap{
+    margin:10px 0;
+    height:6px;
+    background:#e2e8f0;
+    border-radius:3px;
+    overflow:hidden;
+    display:none;
+  }
+  .progress{
+    height:100%;
+    width:0%;
+    background:var(--primary);
+    transition:width 0.2s;
+  }
 
-        .menu-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 5px 10px;
-            color: var(--primary-color);
-        }
+  #uploadResult{
+    margin-top:12px;
+    padding:10px;
+    background:#f0fdf4;
+    border-radius:8px;
+    font-size:13px;
+    display:none;
+  }
+  .link-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:4px 0;
+  }
+  .link-item span{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .link-item button{
+    padding:4px 8px;
+    font-size:12px;
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+  }
 
-        /* 侧边栏 - 现在在右侧 */
-        .sidebar {
-            height: 100%;
-            width: 250px;
-            position: fixed;
-            top: 0;
-            right: -250px;
-            background-color: #fff;
-            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
-            transition: right 0.3s;
-            z-index: 1000;
-            padding-top: 60px;
-        }
+  .category{display:flex;gap:8px;margin-bottom:12px}
+  .category button{padding:6px 12px;border-radius:6px;border:none;background:#e2e8f0;cursor:pointer}
+  .category button.active{background:var(--primary);color:#fff}
 
-        .sidebar.active {
-            left: 0px;
-        }
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .list{display:flex;flex-direction:column;gap:8px}
 
-        .sidebar-close {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            font-size: 24px;
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
+  .item{background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;}
+  .list-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 12px;
+    background:#fff;
+    border-radius:8px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.05)
+  }
 
-        .sidebar-content {
-            padding: 20px;
-        }
+  .thumb{width:100%;height:140px;object-fit:cover;background:#f1f5f9}
+  .name{
+    padding:10px;
+    font-size:12px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    cursor:pointer;
+    color:#333
+  }
+  .bar{display:flex;gap:6px;padding:0 8px 8px}
+  .bar button{flex:1;padding:6px;font-size:12px}
 
-        /* Main Content */
-        .main-content {
-            padding: 70px 20px 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+  .pagination{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;z-index:10}
+  .pagination button,.pagination input{width:34px;height:34px;border-radius:8px;border:none;text-align:center;background:#fff}
 
-        /* Common Components */
-        .card {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
+  .mask{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:999}
+  .mask.show{display:flex}
+  .mask-body{background:#fff;width:90%;max-width:330px;border-radius:16px;padding:24px}
+  .mask-actions{display:flex;gap:10px;margin-top:16px}
+  .mask-actions button{flex:1;padding:10px;border-radius:8px;border:none}
 
-        .form-group {
-            margin-bottom: 15px;
-        }
+  #toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#222;color:#fff;padding:10px 16px;border-radius:8px;display:none;z-index:9999}
+  .mini-btn{padding:4px 8px;font-size:12px}
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: var(--secondary-color);
-        }
-
-        input[type="text"],
-        input[type="file"],
-        input[type="number"],
-        button,
-        select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        button.secondary {
-            background-color: var(--secondary-color);
-        }
-
-        button.danger {
-            background-color: #dc3545;
-        }
-
-        button.success {
-            background-color: #28a745;
-        }
-
-        /* Status Messages */
-        .status {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 4px;
-            display: none;
-        }
-
-        .success {
-            background-color: var(--success-color);
-            color: #155724;
-        }
-
-        .error {
-            background-color: var(--error-color);
-            color: #721c24;
-        }
-
-        /* Progress Bar */
-        .progress {
-            margin-top: 10px;
-            height: 20px;
-            background-color: #eee;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background-color: var(--progress-color);
-            transition: width 0.3s;
-        }
-
-        /* File List */
-        .file-list {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 10px;
-        }
-
-        .file-item {
-            position: relative;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
-            text-align: center;
-            padding: 10px;
-        }
-
-        .file-item img {
-            max-width: 100%;
-            max-height: 100px;
-            border-radius: 4px;
-        }
-
-        .file-actions {
-            margin-top: 10px;
-            display: flex;
-            gap: 5px;
-        }
-
-        .file-actions button {
-            padding: 5px 10px;
-            font-size: 12px;
-        }
-
-        /* Pagination */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 20px;
-            gap: 5px;
-        }
-
-        .pagination button {
-            width: auto;
-            padding: 5px 10px;
-        }
-
-        .pagination button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        .pagination input {
-            width: 50px;
-            text-align: center;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 102;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 400px;
-        }
-
-        .modal-actions {
-            margin-top: 15px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        /* Responsive Adjustments */
-        @media (min-width: 768px) {
-            .sidebar {
-                right: -280px;
-            }
-            
-            .sidebar.active {
-                right: 0;
-            }
-            
-            .menu-btn.active {
-                display: none;
-            }
-        }
-
-        @media (max-width: 767px) {
-            .file-list {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            }
-            
-            .file-actions {
-                flex-direction: column;
-            }
-        }
-    </style>
+  .img-refresh {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 28px;
+    height: 28px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items:center;
+    justify-content:center;
+    font-size:16px;
+    cursor:pointer;
+    z-index:10;
+  }
+</style>
 </head>
 <body>
-    <!-- Header with Menu Button -->
-    <header class="header">
-        <div class="menu-btn" id="menuBtn">☰</div>
-    </header>
+<div id="toast">复制成功</div>
 
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar" id="sidebar">
-        <button class="sidebar-close" id="sidebarClose">×</button>
-        <div class="sidebar-content">
-            <h2>文件管理</h2>
-            <button class="secondary" onclick="showTab(1)">上传文件</button>
-            <button class="secondary" onclick="showTab(2)" style="margin-top: 10px;">管理文件</button>
-        </div>
-    </aside>
+<div class="container">
+  <div class="header">GitHub 文件管理</div>
+  <div class="tabs">
+    <button class="tab active" onclick="show('upload')">上传</button>
+    <button class="tab" onclick="show('list')">文件列表</button>
+  </div>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Tab 1: Upload File -->
-        <div id="tab1" class="tab active">
-            <div class="card">
-                <h2>上传文件到 GitHub</h2>
-                <form id="uploadForm">
-                    <div class="form-group">
-                        <label for="githubToken">GitHub Token：</label>
-                        <input type="text" id="githubToken" placeholder="输入您的 GitHub Token" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="fileInput">选择文件：</label>
-                        <input type="file" id="fileInput" accept=".mp3,.svg,.txt,.md,.jpg,.png,.jpeg,.gif,.html,.php,.woff2,.ttf">
-                    </div>
-                    <div class="form-group">
-                        <label for="filePath">文件路径（根目录可留空）：</label>
-                        <input type="text" id="filePath" placeholder="例如：docs/README.md 或留空上传到根目录">
-                    </div>
-                    <button type="submit">上传到 GitHub</button>
-                </form>
-                <div id="progress" class="progress">
-                    <div id="progressBar" class="progress-bar"></div>
-                </div>
-                <div id="status" class="status"></div>
-                <div id="vercelLinkContainer" class="card" style="display: none; margin-top: 20px;">
-                    <h3>文件链接</h3>
-                    <a id="vercelLink" target="_blank" style="word-break: break-all;"></a>
-                    <button onclick="copyVercelLink()" style="margin-top: 10px;">复制链接</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tab 2: File Management -->
-        <div id="tab2" class="tab">
-            <div class="card">
-                <h2>GitHub 文件管理</h2>
-                <div id="fileList" class="file-list"></div>
-                <div class="pagination">
-                    <button id="prevPage" disabled>上一页</button>
-                    <span id="pageInfo"></span>
-                    <input type="number" id="pageInput" min="1" value="1">
-                    <button id="goToPage">跳转</button>
-                    <button id="nextPage" disabled>下一页</button>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Rename Modal -->
-    <div id="renameModal" class="modal">
-        <div class="modal-content">
-            <h3>重命名文件</h3>
-            <input type="text" id="newFileName" placeholder="输入新文件名">
-            <div class="modal-actions">
-                <button class="secondary" onclick="closeModal()">取消</button>
-                <button onclick="confirmRename()">确认</button>
-            </div>
-        </div>
+  <div class="view show" id="upload-view">
+    <div class="card">
+      <div class="form-group">
+        <label>Token</label>
+        <input type="text" id="token" value="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" readonly>
+      </div>
+      <div class="form-group">
+        <label>选择文件</label>
+        <input type="file" id="file" accept="*/*" multiple onchange="showSelected()">
+      </div>
+      <div id="fileInfo"></div>
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress" id="progress"></div>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="upload()">开始上传</button>
+      <div id="uploadResult">
+        <div id="linkList"></div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // Configuration
-        const vercelDomain = 'https://img.lahz.cn';
-        const itemsPerPage = 20;
-        const repoOwner = 'linshanghui';
-        const repoName = 'img';
-        let currentPage = 1;
-        let totalFiles = 0;
-        let currentFilePath = '';
+  <div class="view" id="list-view">
+    <div class="card">
+      <div class="category">
+        <button class="active" onclick="setCat('all')">全部</button>
+        <button onclick="setCat('image')">图片</button>
+        <button onclick="setCat('other')">其它</button>
+      </div>
+      <div id="container"></div>
+    </div>
+  </div>
+</div>
 
-        // DOM Elements
-        const menuBtn = document.getElementById('menuBtn');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarClose = document.getElementById('sidebarClose');
-        const tabs = document.querySelectorAll('.tab');
-        const uploadForm = document.getElementById('uploadForm');
-        const fileList = document.getElementById('fileList');
-        const prevPageBtn = document.getElementById('prevPage');
-        const nextPageBtn = document.getElementById('nextPage');
-        const pageInfo = document.getElementById('pageInfo');
-        const pageInput = document.getElementById('pageInput');
-        const goToPageBtn = document.getElementById('goToPage');
-        const renameModal = document.getElementById('renameModal');
-        const statusDiv = document.getElementById('status');
-        const progressBar = document.getElementById('progressBar');
+<div class="pagination">
+  <button onclick="prev()">&lt;</button>
+  <input type="number" id="pageInput" onchange="goPage()">
+  <span>/</span>
+  <span id="totalPage">1</span>
+  <button onclick="next()">&gt;</button>
+</div>
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedToken = localStorage.getItem('githubToken');
-            if (savedToken) {
-                document.getElementById('githubToken').value = savedToken;
-            }
-            
-            // Set up event listeners
-            menuBtn.addEventListener('click', toggleSidebar);
-            sidebarClose.addEventListener('click', toggleSidebar);
-            uploadForm.addEventListener('submit', handleUpload);
-            prevPageBtn.addEventListener('click', goToPrevPage);
-            nextPageBtn.addEventListener('click', goToNextPage);
-            goToPageBtn.addEventListener('click', goToPage);
-            
-            // Check if we should show mobile or desktop layout
-            checkViewport();
-            window.addEventListener('resize', checkViewport);
-        });
+<div class="mask" id="renameMask">
+  <div class="mask-body">
+    <h3 style="margin-bottom:12px">重命名</h3>
+    <input type="text" id="newName" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;margin-bottom:16px">
+    <div class="mask-actions">
+      <button onclick="closeMask()">取消</button>
+      <button class="btn-primary" onclick="doRename()">确定</button>
+    </div>
+  </div>
+</div>
 
-        // Toggle sidebar
-        function toggleSidebar() {
-            sidebar.classList.toggle('active');
-            menuBtn.classList.toggle('active');
+<script>
+const cfg = {
+  owner: "linshanghui",
+  repo: "img",
+  token: "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",
+  pageSize: 6
+};
+
+let allFiles = [];
+let page = 1;
+let totalPage = 1;
+let cat = "all";
+let renamePath = "";
+
+function $(id) { return document.getElementById(id); }
+
+window.onload = function() {
+  $("token").value = cfg.token;
+};
+
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  setTimeout(() => t.style.display = "none", 1400);
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast("复制成功");
+  } catch (e) {
+    const input = document.createElement("input");
+    input.value = text;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand("copy");
+    document.body.removeChild(input);
+    toast("复制成功");
+  }
+}
+
+function copyLink(path) {
+  const url = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/main/${path}`;
+  copyText(url);
+}
+
+function refreshImg(img, path) {
+  img.src = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/main/${path}?t=${Date.now()}`;
+}
+
+function show(view) {
+  document.querySelectorAll(".view").forEach(el => el.classList.remove("show"));
+  document.querySelectorAll(".tab").forEach(el => el.classList.remove("active"));
+  $(view + "-view").classList.add("show");
+  event.currentTarget.classList.add("active");
+  if (view === "list") initList();
+}
+
+async function initList() {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents`);
+    allFiles = await res.json() || [];
+    page = 1;
+    render();
+  } catch (e) {
+    toast("加载失败");
+  }
+}
+
+function setCat(c) {
+  cat = c;
+  document.querySelectorAll(".category button").forEach(b => b.classList.remove("active"));
+  const btns = document.querySelectorAll(".category button");
+  if(c==='all') btns[0].classList.add("active");
+  else if(c==='image') btns[1].classList.add("active");
+  else btns[2].classList.add("active");
+  render();
+}
+
+function showSelected() {
+  const f = $("file").files;
+  $("fileInfo").textContent = f.length ? `已选中 ${f.length} 个文件` : "";
+  $("uploadResult").style.display = "none";
+}
+
+function ext(name) {
+  const parts = name.split(".");
+  return parts.length > 1 ? parts.pop().toUpperCase() : "";
+}
+
+function isImg(name) {
+  const e = ext(name);
+  return ["JPG","JPEG","PNG","GIF","BMP","WEBP","SVG"].includes(e);
+}
+
+// 安全转义
+function esc(s) {
+  return s.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+function render() {
+  let filtered = [];
+  if (cat === "all") filtered = [...allFiles];
+  else if (cat === "image") filtered = allFiles.filter(f => isImg(f.name));
+  else filtered = allFiles.filter(f => !isImg(f.name));
+
+  totalPage = Math.ceil(filtered.length / cfg.pageSize);
+  const start = (page - 1) * cfg.pageSize;
+  const pageItems = filtered.slice(start, start + cfg.pageSize);
+
+  $("pageInput").value = page;
+  $("totalPage").textContent = totalPage;
+  const el = $("container");
+
+  if (cat === "other") {
+    el.className = "list";
+    el.innerHTML = pageItems.map(f => {
+      const path = esc(f.path);
+      const name = esc(f.name);
+      return `
+      <div class="list-item">
+        <span onclick="copyLink('${path}')">${name}</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn mini-btn" onclick="rename('${path}')">重命名</button>
+          <button class="btn btn-primary mini-btn" onclick="del('${path}')">删除</button>
+        </div>
+      </div>`;
+    }).join("");
+    return;
+  }
+
+  el.className = "grid";
+  el.innerHTML = pageItems.map(f => {
+    const path = esc(f.path);
+    const name = esc(f.name);
+    if (isImg(f.name)) {
+      const url = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/main/${esc(f.path)}`;
+      return `
+      <div class="item">
+        <img src="${url}" class="thumb">
+        <div class="img-refresh" onclick="refreshImg(this.previousElementSibling,'${path}')">↻</div>
+        <div class="name" onclick="copyLink('${path}')">${name}</div>
+        <div class="bar">
+          <button class="btn" onclick="rename('${path}')">重命名</button>
+          <button class="btn btn-primary" onclick="del('${path}')">删除</button>
+        </div>
+      </div>`;
+    } else {
+      return `
+      <div class="item">
+        <div class="thumb" style="display:flex;align-items:center;justify-content:center">FILE</div>
+        <div class="name" onclick="copyLink('${path}')">${name}</div>
+        <div class="bar">
+          <button class="btn" onclick="rename('${path}')">重命名</button>
+          <button class="btn btn-primary" onclick="del('${path}')">删除</button>
+        </div>
+      </div>`;
+    }
+  }).join("");
+}
+
+function prev() { if (page > 1) { page--; render(); } }
+function next() { if (page < totalPage) { page++; render(); } }
+function goPage() {
+  const v = parseInt($("pageInput").value);
+  if (v >= 1 && v <= totalPage) { page = v; render(); }
+}
+
+async function upload() {
+  const files = $("file").files;
+  if (!files.length) return alert("请选择文件");
+
+  const wrap = $("progressWrap");
+  const bar = $("progress");
+  const result = $("uploadResult");
+  const list = $("linkList");
+
+  wrap.style.display = "block";
+  bar.style.width = "0%";
+  result.style.display = "none";
+  list.innerHTML = "";
+
+  const total = files.length;
+  let successLinks = [];
+
+  for (let i = 0; i < total; i++) {
+    const file = files[i];
+    await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const content = e.target.result.split(",")[1];
+          await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${file.name}`, {
+            method: "PUT",
+            headers: { Authorization: `token ${cfg.token}` },
+            body: JSON.stringify({ message: "upload", content })
+          });
+          const url = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/main/${file.name}`;
+          successLinks.push({ name: file.name, url });
+        } catch (err) {
+          toast(`${file.name} 上传失败`);
         }
+        bar.style.width = (((i + 1) / total) * 100).toFixed(0) + "%";
+        resolve();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 
-        // Show tab
-        function showTab(tabNumber) {
-            tabs.forEach(tab => tab.classList.remove('active'));
-            document.getElementById(`tab${tabNumber}`).classList.add('active');
-            toggleSidebar();
-            
-            if (tabNumber === 2) {
-                loadFileList(currentPage);
-            }
-        }
+  if (successLinks.length > 0) {
+    list.innerHTML = successLinks.map(item => `
+      <div class="link-item">
+        <span>${esc(item.name)}</span>
+        <button onclick="copyText('${esc(item.url)}')">复制</button>
+      </div>
+    `).join("");
+    result.style.display = "block";
+    toast("全部上传完成");
+  }
 
-        // Viewport check for responsive design
-        function checkViewport() {
-            if (window.innerWidth >= 768) {
-                // Desktop - menu button always visible unless sidebar is open
-                if (sidebar.classList.contains('active')) {
-                    menuBtn.classList.add('active');
-                } else {
-                    menuBtn.classList.remove('active');
-                }
-            } else {
-                // Mobile - menu button visible unless sidebar is open
-                if (sidebar.classList.contains('active')) {
-                    menuBtn.classList.add('active');
-                } else {
-                    menuBtn.classList.remove('active');
-                }
-            }
-        }
+  wrap.style.display = "none";
+  $("file").value = "";
+  $("fileInfo").textContent = "";
+  initList();
+}
 
-        // File upload handler
-        async function handleUpload(e) {
-            e.preventDefault();
-            const githubToken = document.getElementById('githubToken').value;
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-            const filePathInput = document.getElementById('filePath').value.trim();
-            const filePath = filePathInput === "" ? file.name : filePathInput;
+// 修复删除白屏
+async function del(path) {
+  if (!confirm("确定删除？")) return;
+  try {
+    const res = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${path}`);
+    if (!res.ok) throw new Error("获取文件失败");
+    const data = await res.json();
+    const delRes = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${path}`, {
+      method: "DELETE",
+      headers: { Authorization: `token ${cfg.token}` },
+      body: JSON.stringify({ sha: data.sha, message: "del" })
+    });
+    toast(delRes.ok ? "删除成功" : "删除失败");
+  } catch (e) {
+    console.error(e);
+    toast("删除失败");
+  } finally {
+    initList();
+  }
+}
 
-            // Validation
-            if (!githubToken) {
-                showStatus('请输入 GitHub Token', 'error');
-                return;
-            }
-            if (!file) {
-                showStatus('请选择要上传的文件', 'error');
-                return;
-            }
+async function doRename() {
+  const newName = $("newName").value.trim();
+  if (!newName) return alert("请输入名称");
+  try {
+    const old = renamePath;
+    const res = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${old}`);
+    const data = await res.json();
 
-            // File size limit (100MB)
-            const maxSize = 100 * 1024 * 1024;
-            if (file.size > maxSize) {
-                showStatus('文件大小超过 100MB', 'error');
-                return;
-            }
+    await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${newName}`, {
+      method: "PUT",
+      headers: { Authorization: `token ${cfg.token}` },
+      body: JSON.stringify({ message: "rename", content: data.content })
+    });
 
-            try {
-                const content = await fileToBase64(file);
-                progressBar.style.width = '10%';
-                showStatus('正在上传文件...', 'progress');
+    await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${old}`, {
+      method: "DELETE",
+      headers: { Authorization: `token ${cfg.token}` },
+      body: JSON.stringify({ sha: data.sha, message: "del old" })
+    });
 
-                const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${encodeURIComponent(filePath)}`;
-                const response = await fetch(url, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${githubToken}`,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/vnd.github.v3+json'
-                    },
-                    body: JSON.stringify({
-                        message: `Uploaded by ${new Date().toISOString()}`,
-                        content: content,
-                        branch: 'main'
-                    })
-                });
+    toast("重命名成功");
+    closeMask();
+  } catch (e) {
+    toast("失败");
+  }
+  initList();
+}
 
-                if (response.ok) {
-                    progressBar.style.width = '100%';
-                    const vercelLink = `${vercelDomain}/${filePath}`;
-                    document.getElementById('vercelLink').href = vercelLink;
-                    document.getElementById('vercelLink').textContent = vercelLink;
-                    document.getElementById('vercelLinkContainer').style.display = 'block';
-                    showStatus(`上传成功！`, 'success');
-                    localStorage.setItem('githubToken', githubToken);
-                } else {
-                    const errorData = await response.json();
-                    showStatus(`上传失败：${errorData.message}`, 'error');
-                    progressBar.style.width = '0%';
-                }
-            } catch (error) {
-                showStatus(`上传失败：${error.message}`, 'error');
-                progressBar.style.width = '0%';
-            }
-        }
-
-        // Load file list
-        async function loadFileList(page) {
-            const githubToken = document.getElementById('githubToken').value;
-            if (!githubToken) {
-                showStatus('请输入 GitHub Token', 'error');
-                return;
-            }
-
-            try {
-                const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents?per_page=${itemsPerPage}&page=${page}`, {
-                    headers: {
-                        'Authorization': `token ${githubToken}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-
-                if (response.ok) {
-                    const files = await response.json();
-                    totalFiles = files.length;
-                    renderFileList(files);
-                    updatePaginationButtons(page);
-                } else {
-                    const errorData = await response.json();
-                    showStatus(`加载文件列表失败：${errorData.message}`, 'error');
-                }
-            } catch (error) {
-                showStatus(`加载文件列表失败：${error.message}`, 'error');
-            }
-        }
-
-        // Render file list
-        function renderFileList(files) {
-            fileList.innerHTML = files.map(file => `
-                <div class="file-item">
-                    ${file.type === 'file' && file.name.match(/\.(jpg|png|jpeg|gif)$/i) ?
-                        `<img src="${vercelDomain}/${file.path}" alt="${file.path}">` : ''
-                    }
-                    <div>${file.path}</div>
-                    <div class="file-actions">
-                        <button class="success" onclick="openRenameModal('${file.path}')">重命名</button>
-                        <button onclick="copyLink('${file.path}')">复制链接</button>
-                        <button class="danger" onclick="deleteFile('${file.path}')">删除</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Pagination functions
-        function updatePaginationButtons(page) {
-            prevPageBtn.disabled = page === 1;
-            nextPageBtn.disabled = totalFiles < itemsPerPage;
-            pageInfo.textContent = `第 ${page} 页`;
-            pageInput.value = page;
-        }
-
-        function goToPrevPage() {
-            currentPage--;
-            loadFileList(currentPage);
-        }
-
-        function goToNextPage() {
-            currentPage++;
-            loadFileList(currentPage);
-        }
-
-        function goToPage() {
-            const page = parseInt(pageInput.value);
-            if (page > 0) {
-                currentPage = page;
-                loadFileList(currentPage);
-            }
-        }
-
-        // File operations
-        function openRenameModal(filePath) {
-            currentFilePath = filePath;
-            document.getElementById('newFileName').value = filePath.split('/').pop();
-            renameModal.style.display = 'flex';
-        }
-
-        function closeModal() {
-            renameModal.style.display = 'none';
-        }
-
-        async function confirmRename() {
-            const newFileName = document.getElementById('newFileName').value.trim();
-            if (!newFileName) {
-                alert('请输入新文件名');
-                return;
-            }
-
-            const githubToken = document.getElementById('githubToken').value;
-            if (!githubToken) {
-                showStatus('请输入 GitHub Token', 'error');
-                return;
-            }
-
-            try {
-                const fileData = await getFileData(currentFilePath);
-                const newPath = currentFilePath.split('/').slice(0, -1).concat(newFileName).join('/');
-
-                const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${encodeURIComponent(newPath)}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${githubToken}`,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/vnd.github.v3+json'
-                    },
-                    body: JSON.stringify({
-                        message: `Renamed by ${new Date().toISOString()}`,
-                        content: fileData.content,
-                        sha: fileData.sha
-                    })
-                });
-
-                if (response.ok) {
-                    showStatus('文件重命名成功！', 'success');
-                    closeModal();
-                    loadFileList(currentPage);
-                } else {
-                    const errorData = await response.json();
-                    showStatus(`重命名文件失败：${errorData.message}`, 'error');
-                }
-            } catch (error) {
-                showStatus(`重命名文件失败：${error.message}`, 'error');
-            }
-        }
-
-        function copyLink(filePath) {
-            const link = `${vercelDomain}/${filePath}`;
-            navigator.clipboard.writeText(link).then(() => {
-                alert('链接已复制到剪贴板！');
-            }).catch(() => {
-                alert('复制失败，请手动复制链接。');
-            });
-        }
-
-        function copyVercelLink() {
-            const link = document.getElementById('vercelLink').href;
-            navigator.clipboard.writeText(link).then(() => {
-                alert('链接已复制到剪贴板！');
-            }).catch(() => {
-                alert('复制失败，请手动复制链接。');
-            });
-        }
-
-        async function deleteFile(path) {
-            if (!confirm('确定要删除这个文件吗？')) return;
-            
-            const githubToken = document.getElementById('githubToken').value;
-            if (!githubToken) {
-                showStatus('请输入 GitHub Token', 'error');
-                return;
-            }
-
-            try {
-                const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${encodeURIComponent(path)}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `token ${githubToken}`,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/vnd.github.v3+json'
-                    },
-                    body: JSON.stringify({
-                        message: `Deleted by ${new Date().toISOString()}`,
-                        sha: await getFileSha(path)
-                    })
-                });
-
-                if (response.ok) {
-                    showStatus('文件删除成功！', 'success');
-                    loadFileList(currentPage);
-                } else {
-                    const errorData = await response.json();
-                    showStatus(`删除文件失败：${errorData.message}`, 'error');
-                }
-            } catch (error) {
-                showStatus(`删除文件失败：${error.message}`, 'error');
-            }
-        }
-
-        // Helper functions
-        async function getFileData(filePath) {
-            const githubToken = document.getElementById('githubToken').value;
-            const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${encodeURIComponent(filePath)}`, {
-                headers: {
-                    'Authorization': `token ${githubToken}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
-            return await response.json();
-        }
-
-        async function getFileSha(path) {
-            const fileData = await getFileData(path);
-            return fileData.sha;
-        }
-
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result.split(',')[1]);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function showStatus(message, type, isHTML = false) {
-            statusDiv.className = `status ${type}`;
-            statusDiv.style.display = 'block';
-            if (isHTML) {
-                statusDiv.innerHTML = message;
-            } else {
-                statusDiv.textContent = message;
-            }
-        }
-    </script>
+function rename(path) {
+  renamePath = path;
+  $("newName").value = path.split("/").pop();
+  $("renameMask").classList.add("show");
+}
+function closeMask() {
+  $("renameMask").classList.remove("show");
+}
+</script>
 </body>
 </html>
