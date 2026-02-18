@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>懒癌患者·图床</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f7f8fa;
+            color: #333;
+            padding: 24px 14px 100px;
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.dark {
+            background: #121212;
+            color: #eee;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .page-title h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        /* 右下角菜单按钮 */
+        .menu-float {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: #fff;
+            border: none;
+            font-size: 16px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        body.dark .menu-float {
+            background: #1e1e1e;
+            color: #eee;
+        }
+
+        /* 弹出菜单 */
+        .menu-popup {
+            position: fixed;
+            bottom: 135px;
+            right: 20px;
+            width: 140px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            z-index: 99;
+            overflow: hidden;
+            display: none;
+        }
+        body.dark .menu-popup {
+            background: #1e1e1e;
+        }
+        .menu-popup.show {
+            display: block;
+        }
+        .menu-item {
+            padding: 12px 16px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .menu-item:hover {
+            background: rgba(0,0,0,0.05);
+        }
+        body.dark .menu-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 26px;
+        }
+        .search-container input {
+            width: 100%;
+            height: 50px;
+            padding: 0 16px 0 44px;
+            font-size: 15px;
+            border: none;
+            border-radius: 14px;
+            background: #fff;
+            color: #333;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            outline: none;
+            transition: background 0.3s, color 0.3s;
+        }
+        body.dark .search-container input {
+            background: #1e1e1e;
+            color: #eee;
+        }
+        .search-container::before {
+            content: "";
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            border: 1.5px solid #999;
+            border-radius: 50%;
+        }
+        .search-container::after {
+            content: "";
+            position: absolute;
+            left: 27px;
+            top: 50%;
+            transform: translateY(3px) rotate(-45deg);
+            width: 1.5px;
+            height: 9px;
+            background: #999;
+        }
+        body.dark .search-container::before,
+        body.dark .search-container::after {
+            border-color: #777;
+            background: #777;
+        }
+
+        .image-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .image-item {
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        body.dark .image-item {
+            background: #1e1e1e;
+        }
+
+        .refresh-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(100, 100, 100, 0.12);
+            color: #fff;
+            border: none;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .image-item img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            display: block;
+            background: #efefef;
+        }
+
+        .image-link {
+            padding: 10px 12px;
+            font-size: 13px;
+            color: #007aff;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .copy-tip {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #07c160;
+            color: #fff;
+            font-size: 12px;
+            text-align: center;
+            padding: 4px 0;
+            z-index: 2;
+        }
+
+        .empty, .error, .loading {
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            font-size: 15px;
+        }
+        body.dark .empty, body.dark .error, body.dark .loading {
+            color: #aaa;
+        }
+
+        .pagination {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            padding: 10px 16px;
+            border-radius: 24px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+            z-index: 9;
+            transition: background 0.3s;
+        }
+        body.dark .pagination {
+            background: #1e1e1e;
+        }
+
+        .page-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: none;
+            background: #f7f8fa;
+            color: #333;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s;
+        }
+        body.dark .page-btn {
+            background: #2d2d2d;
+            color: #eee;
+        }
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .page-input {
+            width: 46px;
+            height: 36px;
+            text-align: center;
+            border: none;
+            border-radius: 10px;
+            background: #f7f8fa;
+            color: #333;
+            outline: none;
+            font-size: 13px;
+            transition: background 0.3s, color 0.3s;
+        }
+        body.dark .page-input {
+            background: #2d2d2d;
+            color: #eee;
+        }
+
+        .page-info {
+            font-size: 13px;
+            color: #666;
+            min-width: 40px;
+            text-align: center;
+            transition: color 0.3s;
+        }
+        body.dark .page-info {
+            color: #aaa;
+        }
+
+        .preview {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s;
+            touch-action: none;
+        }
+        .preview.show {
+            display: flex;
+            opacity: 1;
+        }
+        .preview-img-wrap {
+            position: relative;
+            max-width: 90%;
+            max-height: 90vh;
+        }
+        .preview img {
+            display: block;
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 20px;
+            border: 2px solid rgba(255,255,255,0.15);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.3), 0 20px 60px rgba(0,0,0,0.7);
+        }
+        .preview-close, .preview-prev, .preview-next {
+            position: absolute;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 22px;
+            cursor: pointer;
+            width: 52px;
+            height: 52px;
+            z-index: 10;
+        }
+        .preview-close { top: 20px; right: 20px; }
+        .preview-prev { left: 20px; top: 50%; transform: translateY(-50%); }
+        .preview-next { right: 20px; top: 50%; transform: translateY(-50%); }
+
+        /* 登录弹窗 */
+        .login-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .login-modal.show {
+            display: flex;
+        }
+        .login-box {
+            width: 300px;
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        body.dark .login-box {
+            background: #1e1e1e;
+        }
+        .login-box h3 {
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .login-input {
+            width: 100%;
+            height: 44px;
+            margin-bottom: 12px;
+            padding: 0 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #fff;
+            color: #333;
+        }
+        body.dark .login-input {
+            background: #2d2d2d;
+            color: #eee;
+            border-color: #444;
+        }
+        .login-btn {
+            width: 100%;
+            height: 44px;
+            border: none;
+            border-radius: 10px;
+            background: #007aff;
+            color: #fff;
+            font-size: 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-title">
+    <h1>懒癌患者·图床</h1>
+</div>
+
+<div class="search-container">
+    <input type="text" id="searchInput" placeholder="搜索图片名称">
+</div>
+
+<div class="image-container" id="imageContainer">
+    <div class="loading">加载中...</div>
+</div>
+
+<div class="pagination">
+    <button class="page-btn" id="prev">&lt;</button>
+    <button class="page-btn" id="next">&gt;</button>
+    <input type="number" class="page-input" id="jumpInput" min="1">
+    <span class="page-info" id="pageInfo">1/1</span>
+</div>
+
+<!-- 菜单 -->
+<button class="menu-float" id="menuBtn">≡</button>
+<div class="menu-popup" id="menuPopup">
+    <div class="menu-item" id="darkBtn">暗黑模式</div>
+    <div class="menu-item" id="loginBtn">登录后台</div>
+</div>
+
+<!-- 登录弹窗 -->
+<div class="login-modal" id="loginModal">
+    <div class="login-box">
+        <h3>管理员登录</h3>
+        <input class="login-input" placeholder="用户名" id="adminUser">
+        <input class="login-input" type="password" placeholder="密码" id="adminPwd">
+        <button class="login-btn" id="submitLogin">登录</button>
+    </div>
+</div>
+
+<!-- 预览 -->
+<div class="preview" id="preview">
+    <button class="preview-close">×</button>
+    <button class="preview-prev">&lt;</button>
+    <button class="preview-next">&gt;</button>
+    <div class="preview-img-wrap">
+        <img id="previewImg">
+    </div>
+</div>
+
+<script>
+    let currentPage = 1;
+    const pageSize = 6;
+    let allImages = [];
+    let filterImages = [];
+    let currentPreviewIndex = -1;
+
+    const menuBtn = document.getElementById('menuBtn');
+    const menuPopup = document.getElementById('menuPopup');
+    const darkBtn = document.getElementById('darkBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginModal = document.getElementById('loginModal');
+    const preview = document.getElementById('preview');
+
+    // 菜单开关
+    menuBtn.onclick = () => {
+        menuPopup.classList.toggle('show');
+    };
+    document.addEventListener('click', (e) => {
+        if (!menuBtn.contains(e.target) && !menuPopup.contains(e.target)) {
+            menuPopup.classList.remove('show');
+        }
+    });
+
+    // 暗黑模式
+    darkBtn.onclick = () => {
+        document.body.classList.toggle('dark');
+        menuPopup.classList.remove('show');
+    };
+
+    // 登录弹窗
+    loginBtn.onclick = () => {
+        loginModal.classList.add('show');
+        menuPopup.classList.remove('show');
+    };
+    loginModal.onclick = (e) => {
+        if (e.target === loginModal) loginModal.classList.remove('show');
+    };
+    document.getElementById('submitLogin').onclick = () => {
+        alert('登录功能已触发（可对接后端）');
+        loginModal.classList.remove('show');
+    };
+
+    // 预览
+    function showPreview(index) {
+        currentPreviewIndex = Math.max(0, Math.min(index, filterImages.length - 1));
+        previewImg.src = filterImages[currentPreviewIndex].url;
+        preview.classList.add('show');
+    }
+    function closePreview() { preview.classList.remove('show'); }
+    function prevImg() { showPreview(currentPreviewIndex - 1); }
+    function nextImg() { showPreview(currentPreviewIndex + 1); }
+
+    document.querySelector('.preview-close').onclick = closePreview;
+    document.querySelector('.preview-prev').onclick = prevImg;
+    document.querySelector('.preview-next').onclick = nextImg;
+    preview.onclick = e => e.target === preview && closePreview();
+
+    // 滑动切换
+    let startX = 0;
+    preview.addEventListener('touchstart', e => startX = e.changedTouches[0].clientX);
+    preview.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - startX;
+        if (Math.abs(dx) > 50) dx > 0 ? prevImg() : nextImg();
+    });
+
+    // 加载图片
+    async function loadImages() {
+        const container = document.getElementById('imageContainer');
+        try {
+            const res = await fetch('https://api.github.com/repos/linshanghui/img/contents/');
+            const files = await res.json();
+            allImages = files
+                .filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name))
+                .map(f => ({
+                    name: f.name,
+                    url: 'https://raw.githubusercontent.com/linshanghui/img/main/' + f.name
+                }));
+            filterImages = [...allImages];
+            render();
+        } catch (e) {
+            container.innerHTML = '<div class="error">加载失败，请刷新重试</div>';
+        }
+    }
+
+    function render() {
+        const container = document.getElementById('imageContainer');
+        const total = Math.ceil(filterImages.length / pageSize);
+        currentPage = Math.max(1, Math.min(currentPage, total));
+        container.innerHTML = '';
+
+        if (filterImages.length === 0) {
+            container.innerHTML = '<div class="empty">暂无匹配的图片</div>';
+            updatePagination();
+            return;
+        }
+
+        const start = (currentPage - 1) * pageSize;
+        const list = filterImages.slice(start, start + pageSize);
+
+        list.forEach((item, i) => {
+            const el = document.createElement('div');
+            el.className = 'image-item';
+
+            const refresh = document.createElement('button');
+            refresh.className = 'refresh-btn';
+            refresh.innerHTML = '↻';
+            refresh.onclick = (e) => {
+                e.stopPropagation();
+                const img = el.querySelector('img');
+                img.src = '';
+                setTimeout(() => img.src = item.url + '?t=' + Date.now(), 50);
+            };
+
+            const img = document.createElement('img');
+            img.src = item.url;
+
+            el.onclick = () => showPreview(start + i);
+
+            const name = document.createElement('a');
+            name.className = 'image-link';
+            name.textContent = item.name;
+            name.onclick = (e) => {
+                e.preventDefault(); e.stopPropagation();
+                navigator.clipboard.writeText(item.url).then(()=>{
+                    const old = el.querySelector('.copy-tip');
+                    old && old.remove();
+                    const tip = document.createElement('div');
+                    tip.className = 'copy-tip';
+                    tip.textContent = '复制成功';
+                    el.appendChild(tip);
+                    setTimeout(()=>tip.remove(),1500);
+                });
+            };
+
+            el.appendChild(refresh);
+            el.appendChild(img);
+            el.appendChild(name);
+            container.appendChild(el);
+        });
+        updatePagination();
+    }
+
+    function updatePagination() {
+        const total = Math.ceil(filterImages.length / pageSize);
+        document.getElementById('pageInfo').textContent = `${currentPage}/${total}`;
+        document.getElementById('jumpInput').value = currentPage;
+        document.getElementById('prev').disabled = currentPage <= 1;
+        document.getElementById('next').disabled = currentPage >= total;
+    }
+
+    document.getElementById('prev').onclick = () => { currentPage--; render(); };
+    document.getElementById('next').onclick = () => { currentPage++; render(); };
+    document.getElementById('jumpInput').onchange = function () { currentPage = parseInt(this.value)||1; render(); };
+    document.getElementById('jumpInput').onkeydown = e => e.key === 'Enter' && (currentPage = parseInt(this.value)||1, render());
+    document.getElementById('searchInput').oninput = function () {
+        const key = this.value.toLowerCase().trim();
+        filterImages = allImages.filter(img => img.name.toLowerCase().includes(key));
+        currentPage = 1;
+        render();
+    };
+
+    window.onload = loadImages;
+</script>
+</body>
+</html>
