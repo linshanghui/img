@@ -398,6 +398,7 @@
     const loginBtn = document.getElementById('loginBtn');
     const loginModal = document.getElementById('loginModal');
     const preview = document.getElementById('preview');
+    const previewImg = document.getElementById('previewImg');
 
     // 菜单开关
     menuBtn.onclick = () => {
@@ -454,7 +455,7 @@
                 .filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name))
                 .map(f => ({
                     name: f.name,
-                    url: 'https://raw.githubusercontent.com/linshanghui/img/main/' + f.name
+                    url: 'https://img.lahz.cn/' + f.name
                 }));
             filterImages = [...allImages];
             render();
@@ -501,16 +502,27 @@
             name.className = 'image-link';
             name.textContent = item.name;
             name.onclick = (e) => {
-                e.preventDefault(); e.stopPropagation();
-                navigator.clipboard.writeText(item.url).then(()=>{
-                    const old = el.querySelector('.copy-tip');
-                    old && old.remove();
-                    const tip = document.createElement('div');
-                    tip.className = 'copy-tip';
-                    tip.textContent = '复制成功';
-                    el.appendChild(tip);
-                    setTimeout(()=>tip.remove(),1500);
-                });
+                e.preventDefault();
+                e.stopPropagation();
+
+                const copyUrl = 'https://img.lahz.cn/' + item.name;
+
+                // 万能复制方案，必成功
+                const input = document.createElement('input');
+                input.value = copyUrl;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+
+                // 绿色提示
+                const old = el.querySelector('.copy-tip');
+                if (old) old.remove();
+                const tip = document.createElement('div');
+                tip.className = 'copy-tip';
+                tip.textContent = '复制成功';
+                el.appendChild(tip);
+                setTimeout(() => tip.remove(), 1500);
             };
 
             el.appendChild(refresh);
