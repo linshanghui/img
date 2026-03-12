@@ -35,7 +35,6 @@
             font-weight: 700;
         }
 
-        /* 右下角菜单按钮 */
         .menu-float {
             position: fixed;
             bottom: 90px;
@@ -58,7 +57,6 @@
             color: #eee;
         }
 
-        /* 弹出菜单 */
         .menu-popup {
             position: fixed;
             bottom: 135px;
@@ -73,6 +71,7 @@
         }
         body.dark .menu-popup {
             background: #1e1e1e;
+            color: #eee;
         }
         .menu-popup.show {
             display: block;
@@ -91,7 +90,7 @@
 
         .search-container {
             position: relative;
-            margin-bottom: 26px;
+            margin-bottom: 12px;
         }
         .search-container input {
             width: 100%;
@@ -137,6 +136,34 @@
             background: #777;
         }
 
+        .category-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .category-group button {
+            height: 36px;
+            padding: 0 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #e5e7eb;
+            color: #333;
+            cursor: pointer;
+        }
+        .category-group button.active {
+            background: #6366f1;
+            color: #fff;
+        }
+        body.dark .category-group button {
+            background: #2d2d2d;
+            color: #eee;
+        }
+        body.dark .category-group button.active {
+            background: #6366f1;
+            color: #fff;
+        }
+
         .image-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -154,9 +181,9 @@
         }
         body.dark .image-item {
             background: #1e1e1e;
+            color: #eee;
         }
 
-        /* 刷新按钮层级改低，避免点分页误触 */
         .refresh-btn {
             position: absolute;
             top: 6px;
@@ -172,7 +199,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 1; /* 比分页低 */
+            z-index: 1;
         }
 
         .image-item img {
@@ -231,7 +258,7 @@
             padding: 10px 16px;
             border-radius: 24px;
             box-shadow: 0 3px 15px rgba(0,0,0,0.08);
-            z-index: 99; /* 分页层级最高 */
+            z-index: 99;
             transition: background 0.3s;
         }
         body.dark .pagination {
@@ -331,7 +358,6 @@
         .preview-prev { left: 20px; top: 50%; transform: translateY(-50%); }
         .preview-next { right: 20px; top: 50%; transform: translateY(-50%); }
 
-        /* 登录弹窗已废弃，保留样式不删 */
         .login-modal {
             display: none !important;
         }
@@ -347,6 +373,12 @@
     <input type="text" id="searchInput" placeholder="搜索图片名称">
 </div>
 
+<div class="category-group">
+    <button data-type="all" class="active">全部</button>
+    <button data-type="github">GitHub</button>
+    <button data-type="cloudflare">Cloudflare</button>
+</div>
+
 <div class="image-container" id="imageContainer">
     <div class="loading">加载中...</div>
 </div>
@@ -358,24 +390,12 @@
     <span class="page-info" id="pageInfo">1/1</span>
 </div>
 
-<!-- 菜单 -->
 <button class="menu-float" id="menuBtn">≡</button>
 <div class="menu-popup" id="menuPopup">
     <div class="menu-item" id="darkBtn">暗黑模式</div>
     <div class="menu-item" id="loginBtn">登录后台</div>
 </div>
 
-<!-- 登录弹窗（已隐藏） -->
-<div class="login-modal" id="loginModal">
-    <div class="login-box">
-        <h3>管理员登录</h3>
-        <input class="login-input" placeholder="用户名" id="adminUser">
-        <input class="login-input" type="password" placeholder="密码" id="adminPwd">
-        <button class="login-btn" id="submitLogin">登录</button>
-    </div>
-</div>
-
-<!-- 预览 -->
 <div class="preview" id="preview">
     <button class="preview-close">×</button>
     <button class="preview-prev">&lt;</button>
@@ -391,38 +411,44 @@
     let allImages = [];
     let filterImages = [];
     let currentPreviewIndex = -1;
+    let currentType = "all";
+
+    const catBtns = document.querySelectorAll('.category-group button');
+    catBtns.forEach(btn => {
+        btn.onclick = () => {
+            catBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentType = btn.dataset.type;
+            currentPage = 1;
+            loadImages();
+        };
+    });
 
     const menuBtn = document.getElementById('menuBtn');
     const menuPopup = document.getElementById('menuPopup');
     const darkBtn = document.getElementById('darkBtn');
     const loginBtn = document.getElementById('loginBtn');
-    const loginModal = document.getElementById('loginModal');
-    const preview = document.getElementById('preview');
-    const previewImg = document.getElementById('previewImg');
 
-    // 菜单开关
-    menuBtn.onclick = () => {
-        menuPopup.classList.toggle('show');
-    };
+    menuBtn.onclick = () => { menuPopup.classList.toggle('show'); };
     document.addEventListener('click', (e) => {
         if (!menuBtn.contains(e.target) && !menuPopup.contains(e.target)) {
             menuPopup.classList.remove('show');
         }
     });
 
-    // 暗黑模式
     darkBtn.onclick = () => {
         document.body.classList.toggle('dark');
         menuPopup.classList.remove('show');
     };
 
-    // 登录后台 → 直接跳转到 /admin/
     loginBtn.onclick = () => {
         menuPopup.classList.remove('show');
         window.location.href = '/admin/';
     };
 
-    // 预览
+    const preview = document.getElementById('preview');
+    const previewImg = document.getElementById('previewImg');
+
     function showPreview(index) {
         currentPreviewIndex = Math.max(0, Math.min(index, filterImages.length - 1));
         previewImg.src = filterImages[currentPreviewIndex].url;
@@ -437,7 +463,6 @@
     document.querySelector('.preview-next').onclick = nextImg;
     preview.onclick = e => e.target === preview && closePreview();
 
-    // 滑动切换
     let startX = 0;
     preview.addEventListener('touchstart', e => startX = e.changedTouches[0].clientX);
     preview.addEventListener('touchend', e => {
@@ -445,18 +470,43 @@
         if (Math.abs(dx) > 50) dx > 0 ? prevImg() : nextImg();
     });
 
-    // 加载图片
     async function loadImages() {
         const container = document.getElementById('imageContainer');
+        container.innerHTML = '<div class="loading">加载中...</div>';
         try {
-            const res = await fetch('https://api.github.com/repos/linshanghui/img/contents/');
-            const files = await res.json();
-            allImages = files
+            const ghRes = await fetch('https://api.github.com/repos/linshanghui/img/contents/');
+            const ghFiles = await ghRes.json();
+
+            const cfRes = await fetch('https://worker.lahz.cn');
+            const cfFiles = await cfRes.json();
+
+            const ghImages = ghFiles
                 .filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name))
                 .map(f => ({
                     name: f.name,
                     url: 'https://img.lahz.cn/' + f.name
                 }));
+
+            // 🔥 修复：根目录 & 文件夹 都正常显示，路径完全不变
+            const cfImages = cfFiles
+                .filter(f => {
+                    if(!f.key) return false;
+                    if(f.key.endsWith('/')) return false;
+                    return /\.(jpg|jpeg|png|gif|webp)$/i.test(f.key);
+                })
+                .map(f => ({
+                    name: f.key.split('/').pop(),
+                    url: 'https://cdn.lahz.cn/' + f.key
+                }));
+
+            if (currentType === "all") {
+                allImages = [...ghImages, ...cfImages];
+            } else if (currentType === "github") {
+                allImages = ghImages;
+            } else {
+                allImages = cfImages;
+            }
+
             filterImages = [...allImages];
             render();
         } catch (e) {
@@ -504,10 +554,7 @@
             name.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-
-                const copyUrl = 'https://img.lahz.cn/' + item.name;
-
-                // 万能复制方案，必成功
+                const copyUrl = item.url;
                 const input = document.createElement('input');
                 input.value = copyUrl;
                 document.body.appendChild(input);
@@ -515,7 +562,6 @@
                 document.execCommand('copy');
                 document.body.removeChild(input);
 
-                // 绿色提示
                 const old = el.querySelector('.copy-tip');
                 if (old) old.remove();
                 const tip = document.createElement('div');
@@ -543,8 +589,17 @@
 
     document.getElementById('prev').onclick = () => { currentPage--; render(); };
     document.getElementById('next').onclick = () => { currentPage++; render(); };
-    document.getElementById('jumpInput').onchange = function () { currentPage = parseInt(this.value)||1; render(); };
-    document.getElementById('jumpInput').onkeydown = e => e.key === 'Enter' && (currentPage = parseInt(this.value)||1, render());
+    document.getElementById('jumpInput').onchange = function () {
+        currentPage = parseInt(this.value) || 1;
+        render();
+    };
+    document.getElementById('jumpInput').onkeydown = e => {
+        if (e.key === 'Enter') {
+            currentPage = parseInt(document.getElementById('jumpInput').value) || 1;
+            render();
+        }
+    };
+
     document.getElementById('searchInput').oninput = function () {
         const key = this.value.toLowerCase().trim();
         filterImages = allImages.filter(img => img.name.toLowerCase().includes(key));
